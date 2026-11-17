@@ -59,6 +59,23 @@ python3 farm_client.py sploit.py \
   `python3 flagscan.py d.pcap`
 - **teams.example.json** — формат файла команд для `farm_client.py --teams-file`
 
+## Деплой и откат (vulnbox)
+- **deploy.sh** — git pull + редеплой сервисов одной командой:
+  `deploy.sh --dir ~/infra [svc1 svc2]` (per-service `deploy.sh` или
+  `docker compose up -d --build`; только fast-forward pull; есть `--dry-run`)
+- **patch_snapshot.sh** — снапшот до патча / откат за секунды:
+  `patch_snapshot.sh snapshot ~/infra/svc1` → патч → сломался SLA →
+  `patch_snapshot.sh restore ~/ad_snapshots/<файл>.tar.gz` (рестарт-хуки:
+  `$RESTORE_CMD`, затем docker compose restart)
+
+## Мониторинг и реплей
+- **watch_status.py** — алерты на смену статусов с борды (board-agnostic:
+  сам находит UP/MUMBLE/CORRUPT/DOWN в любом JSON):
+  `watch_status.py --url http://board/api/... --token TOK [--period 15]`
+- **replay.py** — реплей чужой атаки: сырой HTTP-запрос из Pacmate/tcpdump →
+  во все команды (плейсхолдер `{IP}` или авто-подмена Host):
+  `replay.py --request req.txt --teams-file teams.json --port 8080`
+
 ## Проверено
 Смоук-тест на стаб-сервере: конфиг fetched, сплойты по 2 командам,
 дедуп (одинаковый флаг с 2 команд уходит 1 раз), POST доходит,
