@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """HTTP request replay: steal-then-replay workflow from the playbook.
 
-Feed it a raw HTTP request (copied from Pacmate / tcpdump) and the list of
+Feed it a raw HTTP request (copied from Tulip / tcpdump) and the list of
 teams; it sends the same request to every team IP and prints any flags found
 in the responses.
 

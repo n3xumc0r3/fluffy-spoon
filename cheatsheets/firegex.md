@@ -7,6 +7,9 @@ https://github.com/Pwnzer0tt1/firegex
 и **NFQUEUE** (поспакетно, без TLS). Фильтры: **regex** (hyperscan, байты) и
 **pyfilter** (Python с парсингом HTTP/WebSocket/gRPC).
 
+Связано: [чеклист](checklist.md), [патчинг](../fixes/README.md),
+[Firegex-маппинг классов](../fixes/README.md#временный-блок-через-firegex-пока-фиксишь-код).
+
 ## Установка / запуск
 
 ```bash
@@ -96,7 +99,7 @@ def probe_flood(hist: HttpHistory):
 
 ## Правила эксплуатации (не сломать SLA)
 
-1. Сначала трафик (Tulip/Pacmate), потом фильтр.
+1. Сначала трафик (Tulip), потом фильтр.
 2. Тестируй на легитимных запросах чекера — ложный REJECT = MUMBLE.
 3. Фильтруй точечно: URL/метод/параметр, а не «всё со словом select».
 4. Правки применяются без дропа соединений; всё равно смотри борду 1-2 тика.

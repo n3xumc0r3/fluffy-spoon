@@ -3,6 +3,8 @@
 CookieFarm (ByteTheCookies): Go-сервер + Python-клиент `ckc`. Сервер сам
 сабмитит флаги в игру под rate-limit, клиент гоняет сплойты по командам.
 
+Связано: [сплойт](sploit.md), [чеклист](checklist.md), [аварийный сабмит](../docs/tools.md#cookiefarm_submitpy--запасной-сабмит).
+
 ## Сервер
 
 Установка: `bash -c "$(curl -sSL cookiefarm.bytethecookies.org/install.sh)"`,
@@ -46,16 +48,22 @@ shared:
 
 ```bash
 pip install --upgrade cookiefarm requests
-ckc config edit -H <ip фермы> -p 8080
-ckc login -P <пароль> -u <ник>
-ckc exploit create -n my_exploit      # шаблон в ~/.cookiefarm/exploits/
-ckc exploit test -e my_exploit.py -n CookieService -p 8081 -t 120 -W 10   # NOP-команда
-ckc exploit run  -e my_exploit.py -n CookieService -p 8081 -t 120 -W 40 -d  # detach
-ckc exploit listrun / stop -p <pid>
-ckc exploit submit -f <флаг> -n CookieService -t <team_id>   # ручной сабмит
+ckc config edit -H <ip фермы> -p 8080 -u <ник>
+ckc login -u <ник> -P <пароль>
+ckc exploit create -n my_exploit      # шаблон в ~/.config/cookiefarm/exploits/
+ckc exploit test -e my_exploit -n CookieService -t 30 -W 5                # NOP
+ckc exploit run  -e my_exploit -n CookieService -t 120 -W 12 -d           # detach
+ckc exploit run  -e my_exploit -n CookieService -P -S                     # process mode + прямой сабмит
+ckc exploit list / listrun
+ckc exploit stop -p <pid>
+ckc exploit submit -f <флаг> -n CookieService -t <team_id> [-m comment]    # ручной сабмит
 ```
 
-Флаги клиент парсит сам из stdout сплойта.
+- Порт сервиса клиент берёт из `config.yml` сервера (`services`), флага `-p`
+  у `exploit run/test` нет; `-n` = имя сервиса из конфига.
+- `-S` — прямой HTTP-сабмит, `-P` — multiprocessing вместо потоков, `-d` —
+  detach.
+- Флаги клиент парсит сам из stdout сплойта.
 
 ## Контракт сплойта (важно!)
 

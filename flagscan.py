@@ -2,7 +2,7 @@
 """Flag scanner for offline artifacts: pcaps, packet dumps, logs, raw files.
 
 Reads files as raw bytes and extracts every flag matching the regex. Works on
-tcpdump/pcap files, Firegex/Pacmate exports, plain logs, anything. Plaintext
+tcpdump/pcap files, Firegex/Tulip exports, plain logs, anything. Plaintext
 protocols only (HTTP etc.) — encrypted traffic needs the keys first.
 
   python3 flagscan.py dump.pcap [more files...]

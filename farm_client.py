@@ -378,7 +378,6 @@ def main():
     stop.set()
     executor.shutdown(wait=True)
     submit_thread.join(timeout=POST_PERIOD + SERVER_TIMEOUT + 2)
-    submit_thread.join(timeout=POST_PERIOD + SERVER_TIMEOUT)
     if pool.pending:
         log.warning("%d flag(s) never made it to the farm", pool.pending)
 

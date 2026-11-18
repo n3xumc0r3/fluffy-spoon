@@ -4,6 +4,9 @@
 для A/D: загружает pcaps/Suricata, ищет флаги, генерит Python-сниппеты для
 реплея атак. Web UI на :3000.
 
+Связано: [инциденты](incident.md), [чеклист](checklist.md),
+[сплойт](sploit.md), [flag store](../fixes/flags.md).
+
 ## Поднять Tulip
 
 ```bash
