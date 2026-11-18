@@ -97,14 +97,19 @@ python3 farm_client.py sploit.py \
 
 ## Шаблоны фиксов уязвимостей — `fixes/`
 Стандартные заготовки «уязвимо → минимальный фикс» под A/D, с правилами
-«не сломать чекер». Индекс и общий алгоритм — `fixes/README.md`.
+«не сломать чекер». Индекс, «патч за 60 секунд» и Firegex-маппинг —
+`fixes/README.md`, обходы фиксов — `fixes/bypass-matrix.md`, безопасные
+функции — `fixes/snippets/safe_python.py`.
 
 | Класс | Файл |
 |---|---|
+| **Flag store / утечка флага** | `fixes/flags.md` |
 | SQLi | `fixes/sqli.md` |
+| NoSQLi | `fixes/nosql.md` |
 | Инъекции команд | `fixes/cmdi.md` |
 | Path traversal | `fixes/path-traversal.md` |
 | SSTI | `fixes/ssti.md` |
+| Format string | `fixes/format-string.md` |
 | SSRF | `fixes/ssrf.md` |
 | Десериализация | `fixes/deserialization.md` |
 | Auth/IDOR/JWT/сессии | `fixes/auth.md` |
@@ -114,6 +119,7 @@ python3 farm_client.py sploit.py \
 | ReDoS | `fixes/redos.md` |
 | Гонки/TOCTOU | `fixes/race-condition.md` |
 | HTTP-инъекции/XSS/redirect | `fixes/http-injection.md` |
+| Утечка исходников/debug | `fixes/source-disclosure.md` |
 | Бинарные сервисы | `fixes/binary.md` |
 
 ## Шпаргалки — `cheatsheets/`
@@ -130,9 +136,11 @@ python3 farm_client.py sploit.py \
 `--teams-file` и graceful shutdown работают.
 
 ## Памятка по плеюбуку (кратко)
-- До игры: сменить SSH-пароль vulnbox, поднять ферму+Pacmate+Firegex, проверить
-  сабмит тестовым флагом, снапшот бокса, сменить дефолт-креды сервисов.
-- Сеть открылась: сплойты в ферме, мониторинг SLA после каждого деплоя патчей,
-  фильтр чекера vs атакующих в трафике, replay чужих эксплойтов.
+- До игры: сменить SSH-пароль vulnbox, поднять CookieFarm+Tulip+Firegex,
+  проверить тестовый сабмит и `ckc exploit test` на NOP, снапшот бокса,
+  сменить дефолт-креды сервисов.
+- Сеть открылась: сплойты в CookieFarm (`ckc exploit run -d`), мониторинг SLA
+  после каждого деплоя патчей, Tulip — чекер vs атакующие, replay чужих
+  эксплойтов, Firegex — временные фильтры до патча кода (fixes/).
 - Не поднимать чужие флаги себе: если кто-то завернул трафик под тебя —
   у тебя непропатченный сервис.
