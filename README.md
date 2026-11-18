@@ -76,6 +76,35 @@ python3 farm_client.py sploit.py \
   во все команды (плейсхолдер `{IP}` или авто-подмена Host):
   `replay.py --request req.txt --teams-file teams.json --port 8080`
 
+## Шаблоны фиксов уязвимостей — `fixes/`
+Стандартные заготовки «уязвимо → минимальный фикс» под A/D, с правилами
+«не сломать чекер». Индекс и общий алгоритм — `fixes/README.md`.
+
+| Класс | Файл |
+|---|---|
+| SQLi | `fixes/sqli.md` |
+| Инъекции команд | `fixes/cmdi.md` |
+| Path traversal | `fixes/path-traversal.md` |
+| SSTI | `fixes/ssti.md` |
+| SSRF | `fixes/ssrf.md` |
+| Десериализация | `fixes/deserialization.md` |
+| Auth/IDOR/JWT/сессии | `fixes/auth.md` |
+| Крипто | `fixes/crypto.md` |
+| Аплоад/zip slip | `fixes/upload.md` |
+| XXE | `fixes/xxe.md` |
+| ReDoS | `fixes/redos.md` |
+| Гонки/TOCTOU | `fixes/race-condition.md` |
+| HTTP-инъекции/XSS/redirect | `fixes/http-injection.md` |
+| Бинарные сервисы | `fixes/binary.md` |
+
+## Шпаргалки — `cheatsheets/`
+- `cheatsheets/checklist.md` — чеклист игры по фазам + роли
+- `cheatsheets/firegex.md` — regex-фильтры: правила, примеры, чего не делать
+- `cheatsheets/traffic.md` — tcpdump/tshark, выцепление флагов, replay
+- `cheatsheets/farm.md` — протоколы борд, attack data, статусы, тестовый сабмит
+- `cheatsheets/sploit.md` — чеклист сплойта и частые ошибки
+- `cheatsheets/incident.md` — что делать при MUMBLE/DOWN/краже флагов/смерти фермы
+
 ## Проверено
 Смоук-тест на стаб-сервере: конфиг fetched, сплойты по 2 командам,
 дедуп (одинаковый флаг с 2 команд уходит 1 раз), POST доходит,
