@@ -2,13 +2,16 @@
 
 Сжатая версия таймлайна + инструменты кита. Детали:
 [ферма](farm.md) · [Firegex](firegex.md) · [Tulip](traffic.md) ·
-[сплойт](sploit.md) · [инциденты](incident.md) · [патчинг](../fixes/README.md).
+[веб-аудит](web.md) · [attack data](attack-data.md) · [сплойт](sploit.md) ·
+[troubleshooting](troubleshooting.md) · [однострочники](oneliners.md) ·
+[инциденты](incident.md) · [патчинг](../fixes/README.md).
 
 ## До игры (сеть закрыта)
 
 - [ ] SSH-пароль vulnbox сменён, не дефолтный/не общий
 - [ ] CookieFarm: сервер + config.yml (protocol, team_token, services,
       format_ip_teams, flagids), тестовый сабмит (`ckc exploit submit`)
+- [ ] Формат flag IDs проверен на живом endpoint (curl+jq, см. attack-data.md)
 - [ ] `ckc login` с машины атакующих, шаблон сплойта создан и прогнан на NOP
 - [ ] Tulip поднят, `.env` заполнен, pcaps с вулнбокса идут, UI по VPN
 - [ ] Git-структура: services/, сплойты, конфиги; `git pull` на боксе

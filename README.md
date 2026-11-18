@@ -9,7 +9,7 @@ S4DFarm/destructive-farm (`farm_client.py`).
 | Раздел | Что внутри |
 |---|---|
 | `docs/tools.md` | подробный CLI всех скриптов |
-| `cheatsheets/` | оперативные шпаргалки: чеклист, ферма, Firegex, Tulip, сплойт, инциденты |
+| `cheatsheets/` | оперативные шпаргалки: чеклист, ферма, Firegex, Tulip, веб, attack data, сплойт, troubleshooting, однострочники, инциденты |
 | `fixes/` | 18 шаблонов фиксов уязвимостей, `bypass-matrix.md`, `snippets/safe_python.py` |
 | `*.py`, `*.sh` | инструменты (таблица ниже) |
 
@@ -68,7 +68,11 @@ replay.py --request req.txt --teams-file teams.json --port 8080
   [ферма CookieFarm](cheatsheets/farm.md) ·
   [Firegex](cheatsheets/firegex.md) ·
   [Tulip/трафик](cheatsheets/traffic.md) ·
+  [веб-аудит](cheatsheets/web.md) ·
+  [attack data/flag IDs](cheatsheets/attack-data.md) ·
   [сплойт](cheatsheets/sploit.md) ·
+  [troubleshooting](cheatsheets/troubleshooting.md) ·
+  [однострочники](cheatsheets/oneliners.md) ·
   [инциденты](cheatsheets/incident.md)
 - **Патчинг** `fixes/`: [индекс и правила](fixes/README.md) ·
   [матрица обходов](fixes/bypass-matrix.md) ·
