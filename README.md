@@ -1,12 +1,21 @@
 # A/D Kit — свои скрипты для Attack/Defense CTF
 
-Чистая авторская реализация (протокол совместим с S4DFarm / destructive farm:
-`GET /api/get_config`, `POST /api/post_flags`, токен в `Authorization`).
+Чистая авторская реализация. Стек команды: **CookieFarm** (ферма),
+**Firegex** (защита/фильтры), **Tulip** (анализ трафика). Кит совместим и с
+S4DFarm/destructive-farm (см. `farm_client.py`).
 
-## sploit.py — шаблон сплойта
-Контракт с фермой: IP цели = `argv[1]`, флаги печатаются в stdout
-(`print(..., flush=True)`).
+## sploit_cookiefarm.py — шаблон сплойта под CookieFarm (основной)
+Формат `@exploit_manager`: `exploit(ip, port, name_service, flag_ids)`.
+Декоратор сам гоняет по командам, тянет flag IDs и сабмитит флаги.
 
+```bash
+pip install --upgrade cookiefarm requests
+ckc exploit create -n my_exploit   # либо взять наш шаблон
+ckc exploit run -e sploit_cookiefarm.py -n CookieService -p 8081 -t 120 -W 40 -d
+```
+
+## sploit.py — универсальный шаблон сплойта (S4DFarm-контракт)
+IP цели = `argv[1]`, флаги печатаются в stdout (`print(..., flush=True)`).
 Два режима в одном файле:
 - обычный сплойт: `ATTACK_DATA_URL = None`
 - с attack data: `ATTACK_DATA_URL = "http://jury/api/client/attack_data"`,
@@ -19,9 +28,10 @@
 Вся логика атаки — в функции `exploit(ip, data)`: вернуть итерабл флагов
 или печатать прямо оттуда.
 
-## farm_client.py — клиент фермы
+## farm_client.py — клиент фермы (S4DFarm-протокол)
 Запускает сплойт по всем командам в цикле, собирает флаги из stdout,
-дедуплицирует, батчами шлёт на ферму.
+дедуплицирует, батчами шлёт на ферму. Для CookieFarm не нужен (там `ckc`),
+но полезен на бордах/фермах с destructive-farm API.
 
 ```
 python3 farm_client.py sploit.py \
@@ -48,7 +58,16 @@ python3 farm_client.py sploit.py \
 ферма+клиент до игры.
 
 ## Вспомогательные скрипты
-- **submit_flags.py** — ручной сабмит флагов напрямую на борду/ферму
+- **cookiefarm_submit.py** — ручной/запасной сабмит в CookieFarm (логин по
+  паролю сервера, батч, `--store` без отправки в игру):
+  `cat flags.txt | cookiefarm_submit.py --url http://farm:8080 -P PASS -n CookieService -p 8081 -t 3`
+- **firegex_client.py** — управление Firegex без веб-UI (сервисы, фильтры,
+  regex add/list/del, base64 внутри):
+  `FIREGEX_PASSWORD=... firegex_client.py regex add web '(\.\./|%2e%2e)' --mode C`
+- **tulip_client.py** — Tulip из консоли: флоу с флагами, вытащить флаги,
+  `raw` (запрос для replay.py), `pwn`/`python` (готовые скелеты):
+  `tulip_client.py flags --since 60` / `tulip_client.py raw <id> --out req.txt`
+- **submit_flags.py** — ручной сабмит флагов на S4DFarm-совместимую борду
   (запасной канал, если ферма умерла):
   `cat flags.txt | python3 submit_flags.py --url http://farm/api/post_flags --token TOK`
 - **fetch_attack_data.py** — пишет историю attack data в JSONL каждый раунд
@@ -99,9 +118,9 @@ python3 farm_client.py sploit.py \
 
 ## Шпаргалки — `cheatsheets/`
 - `cheatsheets/checklist.md` — чеклист игры по фазам + роли
-- `cheatsheets/firegex.md` — regex-фильтры: правила, примеры, чего не делать
-- `cheatsheets/traffic.md` — tcpdump/tshark, выцепление флагов, replay
-- `cheatsheets/farm.md` — протоколы борд, attack data, статусы, тестовый сабмит
+- `cheatsheets/farm.md` — CookieFarm: сервер, клиент, контракт сплойта, API
+- `cheatsheets/firegex.md` — Firegex: слои, regex- и Python-фильтры, правила
+- `cheatsheets/traffic.md` — Tulip (pcaps, флаги, pwn/raw) + tcpdump/tshark
 - `cheatsheets/sploit.md` — чеклист сплойта и частые ошибки
 - `cheatsheets/incident.md` — что делать при MUMBLE/DOWN/краже флагов/смерти фермы
 

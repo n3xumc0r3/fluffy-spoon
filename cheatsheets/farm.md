@@ -1,70 +1,106 @@
-# Борды и протоколы фермы — шпаргалка
+# CookieFarm — ферма (наш стек)
 
-## Что где
+CookieFarm (ByteTheCookies): Go-сервер + Python-клиент `ckc`. Сервер сам
+сабмитит флаги в игру под rate-limit, клиент гоняет сплойты по командам.
 
-- **Борда (jury)** — центральная система: чекеры, флаги, очки, attack data.
-- **Ферма (S4DFarm / DestructiveFarm)** — ваш клиент: запускает сплоиты,
-  собирает флаги, шлёт на борду под rate-limit.
+## Сервер
 
-## Протокол фермы ↔ ваш клиент (используется китом)
+Установка: `bash -c "$(curl -sSL cookiefarm.bytethecookies.org/install.sh)"`,
+затем `docker compose up --build -d`.
 
-```http
-GET /api/get_config
-Authorization: <team token>
--> 200 {"FLAG_FORMAT": "...", "TEAMS": {"team1": "10.10.10.1", ...}, ...}
-
-POST /api/post_flags
-Authorization: <team token>
-[{"flag": "...", "sploit": "sploit.py", "team": "team1"}, ...]
--> 200
+`.env`:
+```env
+DEBUG=false
+PASSWORD=<сильный пароль>
+CONFIG_FILE=config.yml
+PORT=8080
 ```
 
-Конфиг фермы (S4DFarm: `server/app/protocols/`): протокол борды, регулярка
-флага, endpoint сабмита, токен команды, лимиты, время раунда, список команд.
-
-## Известные протоколы борд
-
-| Борда | Особенности |
-|---|---|
-| ForcAD (Faust/RuCTF) | классика, `/api/client/...`, статусы UP/MUMBLE/CORRUPT/DOWN |
-| CTF01d | C++-борда, свои механики, статусы/сабмит отличаются |
-| saarCTF / ENOWARS | EnoEngine, свой протокол |
-| CTFd-A/D | плагин к CTFd |
-
-Формула очков у всех разная: Attack + Defense + SLA. Читай правила конкретной
-игры (вес SLA, lifetime флага, лимит сабмита) — от этого зависит стратегия:
-SLA-центричные борды не прощают кривых патчей, атако-центричные — прощают.
-
-## Attack data
-
-```http
-GET /api/client/attack_data        # ForcAD-подобные
-Authorization: <team token>
--> 200 {"service": {"10.10.10.5": {"token": "...", "user": "..."}}}
+`config.yml` (важное):
+```yaml
+server:
+  url_flag_checker: "<ip:port жюри>"
+  team_token: "<токен команды>"
+  protocol: "cc_http"        # cc_http | faust | forcad_http
+  tick_time: 120
+  submit_flag_checker_time: 120
+  max_flag_batch_size: 1000
+  url_flag_ids: "<адрес flagids>"
+shared:
+  services:
+    CookieService: 8081      # имя: порт
+  format_ip_teams: "10.10.{}.1"
+  range_ip_teams: 29
+  my_team_id: 1
+  nop_team: 0
+  regex_flag: "[A-Z0-9]{31}="
+  flagids_format: "[service].[team].[id]"
 ```
 
-Формат разный! Смотри в игре:
-- `{"ip": {...}}`
-- `{"team_id": {...}}`
-- `{"service": {"ip": {...}}}`
+- Борды: `cc_http`, `faust`, `forcad_http` — выбирай протокол игры.
+- `my_team_id` исключается из атак, `nop_team` — для тестов.
+- Если игра даёт attack data — это `url_flag_ids` (flag IDs). Сервер проксирует
+  их клиенту, `flagids_format` описывает структуру JSON.
 
-`template.py` в ките умеет все три автоматически; `fetch_attack_data.py`
-пишет историю по раундам (анализ ротации, атаки по старым данным).
+## Клиент
 
-## Статусы сервиса
+```bash
+pip install --upgrade cookiefarm requests
+ckc config edit -H <ip фермы> -p 8080
+ckc login -P <пароль> -u <ник>
+ckc exploit create -n my_exploit      # шаблон в ~/.cookiefarm/exploits/
+ckc exploit test -e my_exploit.py -n CookieService -p 8081 -t 120 -W 10   # NOP-команда
+ckc exploit run  -e my_exploit.py -n CookieService -p 8081 -t 120 -W 40 -d  # detach
+ckc exploit listrun / stop -p <pid>
+ckc exploit submit -f <флаг> -n CookieService -t <team_id>   # ручной сабмит
+```
 
-| Статус | Значение |
-|---|---|
-| UP | жив, флаги на месте |
-| MUMBLE | отвечает криво / проверки чекера не проходят |
-| CORRUPT | флаг не читается / не кладётся |
-| DOWN | мёртв, нет сетевой связности |
+Флаги клиент парсит сам из stdout сплойта.
 
-MUMBLE/CORRUPT после деплоя = откат немедленно (см. `patch_snapshot.sh`).
+## Контракт сплойта (важно!)
 
-## Перед игрой обязательно
+```python
+#!/usr/bin/env python3
+from cookiefarm import exploit_manager
 
-1. Заполнить конфиг фермы, запустить её.
-2. **Тестовый сабмит** — убедиться, что протокол и токен верные.
-3. Прогнать `--once` на своём боксе: флаг с dummy-сплойта дошёл до борды.
-4. Проверить, что `watch_status.py` видит статусы вашей борды (URL/токен).
+@exploit_manager
+def exploit(ip, port, name_service, flag_ids: list):
+    # flag_ids — только для этой команды и сервиса, уже нормализованные
+    print(flag)   # флаги в stdout, потокобезопасно
+```
+
+- Декоратор сам: логинится, тянет конфиг, гоняет по всем командам, ловит
+  stdout по потокам, выцепает флаги regex-ом, логирует JSON.
+- Один процесс = все команды; `-W` воркеры, `-t` тик, `-P` process_mode.
+- Готовый шаблон с HTTP-хелпером: `sploit_cookiefarm.py` в корне кита.
+
+## API сервера (для своих скриптов)
+
+Авторизация: `POST /api/v1/auth/login {"username","password"}` → cookie
+`token` (JWT). Дальше `Cookie: token=...` или `Authorization: Bearer ...`.
+
+```http
+POST /api/v1/submit-flag              {"flag": {"flag_code","service_name","port_service","team_id",...}}   # сразу в игру
+POST /api/v1/submit-flags             {"flags": [...]}   # только в БД
+POST /api/v1/submit-flags-standalone  {"flags": [...]}   # БД + батч в игру
+GET  /api/v1/config                   # конфиг
+GET  /api/v1/stats                    # статистика флагов
+```
+
+Ручной/запасной сабмит: `cookiefarm_submit.py` (в ките) — логин, батч,
+`--store` для «только в БД».
+
+## Эксплуатация в игре
+
+1. До игры: сервер поднят, `protocol`/`team_token` верные, тестовый сабмит
+   через `ckc exploit submit` или `cookiefarm_submit.py`.
+2. Запуск: `ckc exploit run ... -d` (detach) для каждого сервиса/сплойта.
+3. Смотри `GET /api/v1/stats` и дашборд; следи за rate-limit жюри.
+4. Ферма умерла → `cookiefarm_submit.py` + `flagscan.py` по логам/дампам.
+5. Наш `farm_client.py` — для S4DFarm/destructive-farm протокола
+   (`/api/get_config`, `/api/post_flags`), не для CookieFarm.
+
+## Статусы сервисов
+
+CookieFarm статусов сервисов не знает — это делает борда. Мониторинг:
+`watch_status.py --url <борда JSON> --token <токен>`.
